@@ -10,13 +10,12 @@
 #include "ULTRASONIC_config.h"
 
 /* State machine for echo measurement */
-typedef enum {
-    ECHO_IDLE,
-    ECHO_STARTED,
-    ECHO_DONE
-} ECHO_State;
+/* With this: */
+#define ECHO_IDLE       0
+#define ECHO_STARTED    1
+#define ECHO_DONE       2
 
-static volatile ECHO_State Echo_State = ECHO_IDLE;
+static volatile u8 Echo_State = ECHO_IDLE;
 static volatile u8 Echo_TickCount    = 0;
 static volatile u8 Echo_Overflow     = 0;
 
@@ -71,25 +70,24 @@ void ULTRASONIC_Init(void) {
 
 u16 ULTRASONIC_GetDistance(void) {
     u16 distance = 0;
+    u16 timeout  = 60000;   /* moved to top */
 
     /* 1. Reset state */
     Echo_State = ECHO_IDLE;
 
     /* 2. Send 10us TRIG pulse */
     SET_BIT(ULTRASONIC_TRIG_PORT, ULTRASONIC_TRIG_PIN);
-   
     Delay_us(10);
     CLR_BIT(ULTRASONIC_TRIG_PORT, ULTRASONIC_TRIG_PIN);
 
     /* 3. Wait for measurement to complete with timeout */
-    u16 timeout = 60000;
     while (Echo_State != ECHO_DONE) {
         if (--timeout == 0) return ULTRASONIC_MAX_DISTANCE;
     }
 
     /* 4. Calculate distance */
     if (Echo_TickCount == 0xFF) {
-        return ULTRASONIC_MAX_DISTANCE;  // Out of range
+        return ULTRASONIC_MAX_DISTANCE;
     }
 
     distance = (u16)(Echo_TickCount * ULTRASONIC_CM_PER_TICK);

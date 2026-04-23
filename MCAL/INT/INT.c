@@ -2,6 +2,7 @@
 #include "../../SERVICES/BIT_MATH.h"
 #include "../TMR0/TMR0_private.h"  //
 #include "../EXTI/EXTI_private.h"
+#include "../TMR0/TMR0_interface.h"
 
 /* Borrow the function pointers from the other drivers */
 extern void (*TMR0_CallBackFuncP)(void);
