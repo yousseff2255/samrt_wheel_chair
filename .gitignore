@@ -1,55 +1,44 @@
-# Prerequisites
-*.d
+# --- MikroC Specific ---
+# Compiled project binary files
+*.mcl
+*.asm
+*.hex
+*.lst
+*.brk
+*.dct
+*.dlt
+*.ini
+*.txt
+*.log
+*.bmk
 
-# Object files
+# Project and Workspace state files
+*.cfg
+*.user.set
+*.dbg
+*.dcp
+*.mcpav_user
+*.mcpic_user
+
+# --- General Build Artifacts ---
 *.o
-*.ko
 *.obj
 *.elf
-
-# Linker output
-*.ilk
+*.p1
 *.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
 *.hex
+*.coff
 
-# Debug files
-*.dSYM/
+# --- Debug and Temp Files ---
+*.d
 *.su
-*.idb
-*.pdb
+*.tmp
+*.err
+*.pjt
+*.mcpav_err
+*.mcpic_err
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# debug information files
-*.dwo
+# --- OS / IDE Specific ---
+.DS_Store
+Thumbs.db
+*.bak
