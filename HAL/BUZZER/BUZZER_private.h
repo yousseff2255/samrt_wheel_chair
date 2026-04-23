@@ -1,10 +1,6 @@
-#ifndef BUZZER_INTERFACE_H
-#define BUZZER_INTERFACE_H
+#ifndef BUZZER_PRIVATE_H
+#define BUZZER_PRIVATE_H
 
-#include "../../SERVICES/STD_TYPES.h"
-
-void BUZZER_Init(void);
-void BUZZER_On(void);
-void BUZZER_Off(void);
+#include "../../MCAL/REGISTERS/PIC16F877A_reg.h"
 
 #endif

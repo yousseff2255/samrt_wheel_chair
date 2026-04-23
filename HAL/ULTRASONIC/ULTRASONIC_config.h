@@ -26,4 +26,8 @@
 /* Hard stop threshold in cm (second level alert) */
 #define ULTRASONIC_STOP_DISTANCE 20u
 
+
+/* Comment this out when building for real hardware */
+#define SIMULATION
+
 #endif

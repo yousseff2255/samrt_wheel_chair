@@ -4,6 +4,6 @@
 /* Buzzer Pin — RD1 */
 #define BUZZER_DIR      TRISD
 #define BUZZER_PORT     PORTD
-#define BUZZER_PIN      1
+#define BUZZER_PIN      4
 
 #endif
