@@ -5,9 +5,9 @@
 #include "I2C_private.h"
 #include "I2C_config.h"
 
-/**
- * Helper function to wait for the I2C operation to complete.
- */
+#define I2C_ACK     0
+#define I2C_NACK    1
+
 static void I2C_Wait(void) {
     u16 timeout = 10000;
     while (GET_BIT(PIR1, SSPIF) == 0) {

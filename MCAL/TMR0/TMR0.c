@@ -6,13 +6,13 @@
 #include "TMR0_config.h"
 
 
-static u8 TMR0_PreloadValue = 0;
+u8 TMR0_PreloadValue = 0;
 
 void (*TMR0_CallBackFuncP)(void) = NULL_PTR;
 
 void TMR0_Init(void){
     //SET_BIT(INTCON, GIE);  // Enable Global interrupt
-    
+
     /* 1. Select Internal Clock Source (Fosc/4) */
     CLR_BIT(OPTION_REG, T0CS);
 

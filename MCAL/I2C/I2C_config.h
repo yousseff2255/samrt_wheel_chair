@@ -4,7 +4,7 @@
 /* * Define the Crystal Frequency (Fosc) in Hz.
  * This is used to calculate the Baud Rate (SSPADD).
  */
-#define I2C_FOSC    8000000UL  // 8 MHz
+#define I2C_FOSC    10000000UL  // 8 MHz
 
 /* * Default Baud Rate if not specified.
  */

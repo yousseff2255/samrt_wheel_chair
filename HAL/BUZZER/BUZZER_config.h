@@ -1,9 +1,9 @@
 #ifndef BUZZER_CONFIG_H
 #define BUZZER_CONFIG_H
 
-/* Buzzer Pin — RD1 */
-#define BUZZER_DIR      TRISD
-#define BUZZER_PORT     PORTD
-#define BUZZER_PIN      4
+/* Buzzer Pin — RD4 */
+#define BUZZER_DIR      TRISC
+#define BUZZER_PORT     PORTC
+#define BUZZER_PIN      2
 
 #endif
