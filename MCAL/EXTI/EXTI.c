@@ -2,6 +2,7 @@
 #include "../../SERVICES/BIT_MATH.h"
 #include "EXTI_interface.h"
 #include "EXTI_private.h"
+#include <xc.h>
 
 /* Global Function Pointer for the Callback */
 void (*EXTI_CallBackFuncP)(void) = NULL_PTR;

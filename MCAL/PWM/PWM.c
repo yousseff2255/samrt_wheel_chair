@@ -2,6 +2,7 @@
 #include "../../SERVICES/BIT_MATH.h"
 #include "PWM_interface.h"
 #include "PWM_private.h" /* Ensure your register addresses are here */
+#include <xc.h>
 
 void PWM1_Init(u8 Copy_u8PR2Value) {
     // STEP 1: Set the PWM period

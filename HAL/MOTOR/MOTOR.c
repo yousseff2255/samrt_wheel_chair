@@ -1,6 +1,6 @@
+#include <xc.h>
 #include "../../SERVICES/STD_TYPES.h"
 #include "../../SERVICES/BIT_MATH.h"
-
 #include "MOTOR_interface.h"
 #include "MOTOR_private.h"
 #include "MOTOR_config.h"

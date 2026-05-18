@@ -4,6 +4,7 @@
 #include "BUZZER_interface.h"
 #include "BUZZER_private.h"
 #include "BUZZER_config.h"
+#include <xc.h>
 
 void BUZZER_Init(void) {
     CLR_BIT(BUZZER_DIR, BUZZER_PIN);   // Set as output

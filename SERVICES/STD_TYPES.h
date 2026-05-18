@@ -1,5 +1,6 @@
 #ifndef STD_TYPES_H
 #define STD_TYPES_H
+#include <xc.h>
 
 /* Signed Types */
 typedef signed char        s8;

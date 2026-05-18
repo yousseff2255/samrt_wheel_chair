@@ -1,13 +1,10 @@
 #ifndef I2C_CONFIG_H
 #define I2C_CONFIG_H
 
-/* * Define the Crystal Frequency (Fosc) in Hz.
- * This is used to calculate the Baud Rate (SSPADD).
- */
-#define I2C_FOSC    8000000UL  // 8 MHz
+/* Crystal Frequency in Hz */
+#define I2C_FOSC       10000000UL  // 10 MHz
 
-/* * Default Baud Rate if not specified.
- */
-#define I2C_DEFAULT_BAUD  100000UL // 100 kHz
+/* Timeout limit to prevent the wheelchair from freezing if a wire breaks */
+#define I2C_TIMEOUT    10000       
 
 #endif

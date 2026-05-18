@@ -1,101 +1,81 @@
+#include <xc.h>
+#define _XTAL_FREQ 10000000UL
+
 #include "../../SERVICES/STD_TYPES.h"
 #include "../../SERVICES/BIT_MATH.h"
-
-#include "../../MCAL/TMR0/TMR0_interface.h"
-#include "../../MCAL/EXTI/EXTI_interface.h"
-#include "../../MCAL/GPIO/GPIO_interface.h"
-
 #include "ULTRASONIC_interface.h"
 #include "ULTRASONIC_private.h"
 #include "ULTRASONIC_config.h"
 
-/* State machine for echo measurement */
-/* With this: */
-#define ECHO_IDLE       0
-#define ECHO_STARTED    1
-#define ECHO_DONE       2
-
-static volatile u8 Echo_State = ECHO_IDLE;
-static volatile u8 Echo_TickCount    = 0;
-static volatile u8 Echo_Overflow     = 0;
-
-/* Callback: fires on every EXTI edge */
-static void ULTRASONIC_EchoCallback(void) {
-    if (Echo_State == ECHO_IDLE) {
-        /* Rising edge detected — start counting */
-        TMR0_SetPreloadValue(0);
-        TMR0_Start();
-        Echo_TickCount = 0;
-        Echo_Overflow  = 0;
-        Echo_State     = ECHO_STARTED;
-        EXTI_ToggleEdge();          // Now listen for falling edge
-    }
-    else if (Echo_State == ECHO_STARTED) {
-        /* Falling edge detected — stop counting */
-        TMR0_Stop();
-        Echo_TickCount = TMR0_GetPreloadValue();
-        Echo_State     = ECHO_DONE;
-        EXTI_ToggleEdge();          // Reset back to rising edge
-    }
-}
-
-/* ── Callback: fires on every TMR0 overflow ── */
-static void ULTRASONIC_TimerCallback(void) {
-    if (Echo_State == ECHO_STARTED) {
-        Echo_Overflow++;
-        /* If overflow too many times, object is out of range */
-        if (Echo_Overflow > 4) {
-            TMR0_Stop();
-            Echo_State = ECHO_DONE;
-            Echo_TickCount = 0xFF;  // Sentinel for out of range
-        }
-    }
-}
-
 void ULTRASONIC_Init(void) {
-    /* 1. TRIG as output, ECHO as input */
-    CLR_BIT(ULTRASONIC_TRIG_DIR, ULTRASONIC_TRIG_PIN);
+    /* 1. Setup Trigger and Echo Pins */
+    CLR_BIT(ULTRASONIC_TRIG_DIR,  ULTRASONIC_TRIG_PIN);
+    CLR_BIT(ULTRASONIC_TRIG_PORT, ULTRASONIC_TRIG_PIN);
     SET_BIT(ULTRASONIC_ECHO_DIR, ULTRASONIC_ECHO_PIN);
 
-    /* 2. TRIG starts LOW */
-    CLR_BIT(ULTRASONIC_TRIG_PORT, ULTRASONIC_TRIG_PIN);
+    /* 2. Setup Timer1 for 16-bit Polling (No Interrupts!)
+     * 1:1 Prescaler. At 10MHz, 1 tick = 0.4 microseconds. */
+    T1CON = 0x00; 
+    
 
-    /* 3. Register callbacks */
-    EXTI_SetCallBack(ULTRASONIC_EchoCallback);
-    TMR0_SetCallBack(ULTRASONIC_TimerCallback);
-
-    /* 4. Init EXTI on rising edge first */
-    EXTI_Init();
 }
 
 u16 ULTRASONIC_GetDistance(void) {
-    u16 distance = 0;
-    u16 timeout  = 60000;   /* moved to top */
+    u16 ticks = 0;
+    u16 timeout = 0;
+    float distance = 0;
 
-    /* 1. Reset state */
-    Echo_State = ECHO_IDLE;
+    /* 1. CLONE BUG FIX: Force Echo pin LOW if stuck HIGH from a missed ping */
+    if (GET_BIT(PORTB, ULTRASONIC_ECHO_PIN) == 1) {
+        CLR_BIT(ULTRASONIC_ECHO_DIR, ULTRASONIC_ECHO_PIN);  /* Set Output */
+        CLR_BIT(PORTB, ULTRASONIC_ECHO_PIN);                /* Drive LOW */
+        __delay_ms(1);
+        SET_BIT(ULTRASONIC_ECHO_DIR, ULTRASONIC_ECHO_PIN);  /* Set Input */
+    }
 
-    /* 2. Send 10us TRIG pulse */
+    /* 2. Send 10us Trigger Pulse */
     SET_BIT(ULTRASONIC_TRIG_PORT, ULTRASONIC_TRIG_PIN);
-    Delay_us(10);
+    __delay_us(10);
     CLR_BIT(ULTRASONIC_TRIG_PORT, ULTRASONIC_TRIG_PIN);
 
-    /* 3. Wait for measurement to complete with timeout */
-    while (Echo_State != ECHO_DONE) {
-        if (--timeout == 0) return ULTRASONIC_MAX_DISTANCE;
+    /* 3. Wait for Echo to go HIGH (Ping sent) */
+    timeout = 0;
+    while (GET_BIT(PORTB, ULTRASONIC_ECHO_PIN) == 0) {
+        __delay_us(1);
+        if (++timeout > 10000) {
+            return ULTRASONIC_MAX_DISTANCE; /* Error: Sensor didn't fire */
+        }
     }
 
-    /* 4. Calculate distance */
-    if (Echo_TickCount == 0xFF) {
+    /* 4. Start Timer1 immediately */
+    TMR1H = 0;
+    TMR1L = 0;
+    SET_BIT(T1CON, 0); /* TMR1ON = 1 */
+
+    /* 5. Wait for Echo to go LOW (Ping returned) */
+    while (GET_BIT(PORTB, ULTRASONIC_ECHO_PIN) == 1) {
+        /* Read 16-bit timer safely */
+        ticks = (TMR1H << 8) | TMR1L;
+        
+        /* If timer exceeds 60,000 ticks (~411 cm), force timeout */
+        if (ticks > 60000) {
+            CLR_BIT(T1CON, 0); /* TMR1ON = 0 */
+            return ULTRASONIC_MAX_DISTANCE;
+        }
+    }
+
+    /* 6. Stop timer and capture final ticks */
+    CLR_BIT(T1CON, 0); /* TMR1ON = 0 */
+    ticks = (TMR1H << 8) | TMR1L;
+
+    /* 7. Calculate Distance
+     * 1 Tick = 0.4 us. Sound = 0.0343 cm/us.
+     * Distance = (Ticks * 0.4 * 0.0343) / 2 = Ticks * 0.00686 
+     */
+    distance = (float)ticks * 0.00686f;
+
+    if (distance > ULTRASONIC_MAX_DISTANCE) {
         return ULTRASONIC_MAX_DISTANCE;
     }
-
-    distance = (u16)(Echo_TickCount * ULTRASONIC_CM_PER_TICK);
-
-    /* 5. Clamp to max */
-    if (distance > ULTRASONIC_MAX_DISTANCE) {
-        distance = ULTRASONIC_MAX_DISTANCE;
-    }
-
-    return distance;
+    return (u16)distance;
 }

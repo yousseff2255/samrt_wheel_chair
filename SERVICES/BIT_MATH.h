@@ -1,5 +1,6 @@
 #ifndef BIT_MATH_H
 #define BIT_MATH_H
+#include <xc.h>
 
 #define SET_BIT(REG,BIT)      ( (REG) |=  (1U << (BIT)) )
 #define CLR_BIT(REG,BIT)      ( (REG) &= ~(1U << (BIT)) )

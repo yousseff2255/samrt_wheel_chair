@@ -1,7 +1,7 @@
 #include "GPIO_interface.h"
 #include "GPIO_private.h"
 #include "GPIO_config.h"
-
+#include <xc.h>
 #include "../../SERVICES/BIT_MATH.h"
 
 

@@ -11,10 +11,7 @@
 #define T0CS        5
 #define T0SE        4
 
-/* INTCON Bits */
-#define GIE         7
-#define TMR0IE      5
-#define TMR0IF      2
+
 
 /* Prescaler Options */
 #define PRESCALER_2     0b000
@@ -25,5 +22,7 @@
 #define PRESCALER_64    0b101
 #define PRESCALER_128   0b110
 #define PRESCALER_256   0b111
+
+extern u8 TMR0_PreloadValue;
 
 #endif

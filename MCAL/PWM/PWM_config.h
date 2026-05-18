@@ -2,7 +2,7 @@
 #define PWM_CONFIG_H
 
 /* Crystal Frequency */
-#define F_CPU               8000000UL
+#define F_CPU               10000000UL
 /* Desired PWM Frequency in Hz */
 #define PWM_DESIRED_FREQ    500UL
 /* Timer2 Prescaler (1, 4, or 16) */

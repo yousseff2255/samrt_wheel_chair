@@ -3,20 +3,18 @@
 
 #include "../../MCAL/REGISTERS/PIC16F877A_reg.h"
 
-#ifdef SIMULATION
-    /* GUR03 — Single SIG pin on RB0 */
-    #define ULTRASONIC_SIG_DIR      TRISB
-    #define ULTRASONIC_SIG_PORT     PORTB
-    #define ULTRASONIC_SIG_PIN      0
+/* ── Trigger: RD5 (free GPIO) ───────────────────────────────────────────────── */
+#define ULTRASONIC_TRIG_DIR     TRISD
+#define ULTRASONIC_TRIG_PORT    PORTD
+#define ULTRASONIC_TRIG_PIN     5
 
-#else
-    /* HC-SR04 — Separate TRIG and ECHO for real hardware */
-    #define ULTRASONIC_TRIG_DIR     TRISD
-    #define ULTRASONIC_TRIG_PORT    PORTD
-    #define ULTRASONIC_TRIG_PIN     0
+/* ── Echo: RB0 (INT / EXTI pin) ─────────────────────────────────────────────── */
+#define ULTRASONIC_ECHO_DIR     TRISB
+#define ULTRASONIC_ECHO_PIN     0
 
-    #define ULTRASONIC_ECHO_DIR     TRISB
-    #define ULTRASONIC_ECHO_PIN     0
-#endif
+/* ── Echo state machine states ───────────────────────────────────────────────── */
+#define ECHO_IDLE               0u
+#define ECHO_STARTED            1u
+#define ECHO_DONE               2u
 
-#endif
+#endif /* ULTRASONIC_PRIVATE_H */

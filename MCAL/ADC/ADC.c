@@ -4,6 +4,7 @@
 #include "ADC_interface.h"
 #include "ADC_private.h"
 #include "ADC_config.h"
+#include <xc.h>
 
 void ADC_Init(void) {
 

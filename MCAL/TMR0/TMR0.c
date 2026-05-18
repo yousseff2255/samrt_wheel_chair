@@ -1,63 +1,47 @@
+
+#include <xc.h>
 #include "../../SERVICES/STD_TYPES.h"
 #include "../../SERVICES/BIT_MATH.h"
-
 #include "TMR0_interface.h"
 #include "TMR0_private.h"
 #include "TMR0_config.h"
 
-
-static u8 TMR0_PreloadValue = 0;
-
+/* Callback pointer ? called by ISR on every TMR0 overflow */
 void (*TMR0_CallBackFuncP)(void) = NULL_PTR;
 
-void TMR0_Init(void){
-    //SET_BIT(INTCON, GIE);  // Enable Global interrupt
-    
-    /* 1. Select Internal Clock Source (Fosc/4) */
-    CLR_BIT(OPTION_REG, T0CS);
+void TMR0_Init(void) {
+    /*
+     * OPTION_REG layout (relevant bits):
+     *  bit7: RBPU   ? leave alone
+     *  bit6: INTEDG ? leave alone (EXTI uses this)
+     *  bit5: T0CS   = 0  internal instruction clock
+     *  bit4: T0SE   = 0  irrelevant (internal clock)
+     *  bit3: PSA    = 0  prescaler assigned to TMR0
+     *  bit2-0: PS   = TMR0_PRESCALER (from config)
+     *
+     * We ONLY touch bits 5,4,3,2,1,0 ? preserving RBPU and INTEDG.
+     */
+    OPTION_REG &= 0b11000000;              /* clear T0CS,T0SE,PSA,PS[2:0]  */
+    OPTION_REG |= (0b00000000 | TMR0_PRESCALER); /* T0CS=0,PSA=0 + prescaler     */
 
-    /* 2. Assign Prescaler to Timer0 (PSA = 0) */
-    CLR_BIT(OPTION_REG, PSA);
-
-
-    /* 3. Set Prescaler to 1:256 (0b111)
-     First: Clear the bottom 3 bits (Masking)*/
-    OPTION_REG &= 0xF8;         // 0b11111000
-
-    // Second: Set the bits
-    OPTION_REG |= TMR0_PRESCALER;
-
-    /* 4. Clear the Timer Register and Flag */
     TMR0 = 0;
+    CLR_BIT(INTCON, TMR0IF);
+    /* TMR0IE is NOT enabled here ? ULTRASONIC driver enables it on demand */
+}
+
+void TMR0_Start(void) {
+    TMR0 = 0;
+    CLR_BIT(INTCON, TMR0IF);
+    SET_BIT(INTCON, TMR0IE);
+}
+
+void TMR0_Stop(void) {
+    CLR_BIT(INTCON, TMR0IE);
     CLR_BIT(INTCON, TMR0IF);
 }
 
-void TMR0_Start(){
-SET_BIT(INTCON, TMR0IE);
-}
-void TMR0_Stop(){
-CLR_BIT(INTCON, TMR0IE);}
-
-
-
-void TMR0_reset(void) {
-    TMR0 = TMR0_PreloadValue;        // Reset hardware register to preload value
-
-}
-
-void TMR0_SetCallBack(void(*CallBackFunc)(void)){
-     if(CallBackFunc!=NULL_PTR){
-       TMR0_CallBackFuncP =CallBackFunc;
-     }
-}
-
-
-
-void TMR0_SetPreloadValue(u8 Value) {
-    TMR0_PreloadValue = Value;
-    TMR0 = Value;
-}
-
-u8 TMR0_GetPreloadValue(void) {
-    return TMR0_PreloadValue;
+void TMR0_SetCallBack(void (*CallBackFunc)(void)) {
+    if (CallBackFunc != NULL_PTR) {
+        TMR0_CallBackFuncP = CallBackFunc;
+    }
 }

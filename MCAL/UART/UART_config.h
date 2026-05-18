@@ -1,14 +1,8 @@
-                                                #ifndef UART_CONFIG_H
+#ifndef UART_CONFIG_H
 #define UART_CONFIG_H
 
 /* Crystal Frequency in Hz */
-#define UART_FOSC           8000000UL
-
-/**
- * Default Baud Rate
- * Common values: 9600, 19200, 38400, 57600, 115200
- */
-#define UART_DEFAULT_BAUD   9600
+#define UART_FOSC           10000000UL
 
 /**
  * High Baud Rate Select (BRGH)
@@ -16,5 +10,8 @@
  * 0: Low speed (uses Fosc/64)
  */
 #define UART_BRGH_CONFIG    1
+
+/* Timeout limit to prevent the PIC from freezing if the Raspberry Pi disconnects */
+#define UART_TIMEOUT        20000
 
 #endif

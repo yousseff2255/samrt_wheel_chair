@@ -6,9 +6,6 @@
 #define SCL_PIN             3
 #define SDA_PIN             4
 
-/* PIR1 Bits */
-#define SSPIF               3
-
 /* SSPCON2 Bits */
 #define SSPCON2_SEN         0
 #define SSPCON2_RSEN        1
