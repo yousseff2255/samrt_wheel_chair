@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "589281653776",
+    "firebase_url": "https://smart-wheelchair-3f92e-default-rtdb.firebaseio.com",
+    "project_id": "smart-wheelchair-3f92e",
+    "storage_bucket": "smart-wheelchair-3f92e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589281653776:android:4429e38eefc8d5b38a0695",
+        "android_client_info": {
+          "package_name": "com.example.wheelchair_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4KejQxxWOM-In6fA50aHHzLPTVZPydnI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
