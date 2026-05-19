@@ -44,4 +44,10 @@ Thumbs.db
 *.bak
 
 
-*.cp
+*.cpbuild/
+.dart_tool/
+.flutter-plugins-dependencies
+.packages
+.pub/
+.idea/
+*.iml
