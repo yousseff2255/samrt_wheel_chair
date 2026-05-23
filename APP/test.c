@@ -26,11 +26,11 @@
 #include "../HAL/BUZZER/BUZZER_interface.h"
 
 /* Thresholds */
-#define DIST_WARNING_THRESH  100
-#define DIST_STOP_THRESH     35
+#define DIST_WARNING_THRESH  50
+#define DIST_STOP_THRESH     20
 
 /* Pi Command Buffer */
-static volatile uint8_t g_pi_command = 'S'; /* Default: stopped, wait for Pi */
+static volatile uint8_t g_pi_command = 'F'; /* CHANGED: Default to Forward, don't wait for Pi */
 static volatile uint8_t g_cmd_ready  = 0;
 
 /* ---------------------------------------------------------------
@@ -41,7 +41,7 @@ volatile u32 g_systemTick_ms = 0;
 void Timer0_Init(void) {
     OPTION_REGbits.T0CS = 0;
     OPTION_REGbits.PSA  = 0;
-    OPTION_REGbits.PS   = 0b011; /* 1:16 prescaler ? ~1ms @ 10MHz */
+    OPTION_REGbits.PS   = 0b011; /* 1:16 prescaler -> ~1ms @ 10MHz */
     TMR0   = 100;
     TMR0IE = 1;
     TMR0IF = 0;
@@ -51,14 +51,14 @@ void Timer0_Init(void) {
  * UART RX Interrupt (RCIF) + Timer0 ISR
  * --------------------------------------------------------------- */
 void __interrupt() ISR(void) {
-    /* Timer0 ? system tick */
+    /* Timer0 -> system tick */
     if (TMR0IF) {
         g_systemTick_ms++;
         TMR0  = 100;
         TMR0IF = 0;
     }
 
-    /* UART RX ? capture Pi command */
+    /* UART RX -> capture Pi command */
     if (PIR1bits.RCIF) {
         uint8_t rx = RCREG;          /* Reading RCREG clears RCIF */
 
@@ -159,7 +159,7 @@ void main(void) {
 
     uint8_t fall_flag      = 0;
     uint8_t collision_flag = 0;
-    uint8_t is_moving      = 0;
+    uint8_t is_moving      = 1; /* CHANGED: Starts as moving by default */
 
     /* Status LEDs */
     TRISBbits.TRISB1 = 0; PORTBbits.RB1 = 0;  /* Heartbeat */
@@ -201,7 +201,7 @@ void main(void) {
     UART_SendString("[BOOT] System Ready.\r\n");
     Lcd_Cmd(0x01);
 
-    MOTOR_Stop(); /* Wait for Pi command before moving */
+    MOTOR_Forward(); /* CHANGED: Drive forward automatically after boot calibration */
 
     /* --------------------------------------------------------
      * MAIN LOOP
@@ -221,63 +221,73 @@ void main(void) {
         fall_flag      = MPU6050_IsFalling() ? 1 : 0;
         collision_flag = (dist <= DIST_STOP_THRESH) ? 1 : 0;
 
-        /* 3. Safety-first actuator logic
-         *
-         *  Priority (highest ? lowest):
-         *    [1] Fall detected        ? STOP + buzzer + LED
-         *    [2] dist <= STOP_THRESH  ? STOP + buzzer + LED   (collision_flag)
-         *    [3] dist <= WARN_THRESH  ? buzzer only, still obey Pi command
-         *    [4] Pi command           ? execute freely
-         */
+        /* 3. Safety-first actuator logic */
         if (fall_flag) {
+            /* Ultimate Safety: If the chair falls over, completely freeze everything */
             MOTOR_Stop();
             BUZZER_On();
             PORTBbits.RB2 = 1;
             is_moving = 0;
 
-        } else if (collision_flag) {
-            MOTOR_Stop();
+        } else if (dist <= DIST_STOP_THRESH) {
+            /* CRITICAL CLOSE RANGE: Danger zone! */
+            BUZZER_On();         /* Keep buzzer on to alert user */
+            PORTBbits.RB2 = 1;   /* Keep warning LED on */
+
+            /* BLOCK Forward, but ALLOW escape maneuvers (Backward, Left, Right) */
+            if (g_pi_command == 'B') {
+                MOTOR_Backward();
+                is_moving = 1;
+            } else if (g_pi_command == 'L') {
+                MOTOR_Left();
+                is_moving = 1;
+            } else if (g_pi_command == 'R') {
+                MOTOR_Right();
+                is_moving = 1;
+            } else {
+                /* If command is 'F' (Forward) or 'S' (Stop), force stop to prevent crash */
+                MOTOR_Stop();
+                is_moving = 0;
+            }
+
+        } else if (dist <= DIST_WARNING_THRESH) {
+            /* WARNING RANGE: Obstacle approaching ahead */
             BUZZER_On();
             PORTBbits.RB2 = 1;
-            is_moving = 0;
+
+            /* Allow escaping or re-orienting here as well */
+            if (g_pi_command == 'B') {
+                MOTOR_Backward();
+                is_moving = 1;
+            } else if (g_pi_command == 'L') {
+                MOTOR_Left();
+                is_moving = 1;
+            } else if (g_pi_command == 'R') {
+                MOTOR_Right();
+                is_moving = 1;
+            } else {
+                /* Forward allowed? Since it's just a warning, we can still block forward or allow it.
+                   Based on your previous setup, we blocked forward here to prevent getting closer. */
+                MOTOR_Stop();
+                is_moving = 0;
+            }
 
         } else {
-            /* No hard stop needed ? enforce warning buzzer, then obey Pi */
+            /* CLEAR PATH: Normal operation, obey Pi fully */
+            BUZZER_Off();
+            PORTBbits.RB2 = 0;
 
-            if (dist <= DIST_WARNING_THRESH) {
-                BUZZER_On();
-                PORTBbits.RB2 = 1;
-
-                /* Still honour Pi, but only allow STOP/BACKWARD (not forward) */
-                if (g_pi_command == 'F' || g_pi_command == 'L' || g_pi_command == 'R') {
-                    /* Suppress forward/turns when obstacle is close */
-                    MOTOR_Stop();
-                    is_moving = 0;
-                } else if (g_pi_command == 'B') {
-                    MOTOR_Backward();
-                    is_moving = 1;
-                } else {
-                    MOTOR_Stop();
-                    is_moving = 0;
-                }
-
-            } else {
-                /* Clear path: obey Pi command fully */
-                BUZZER_Off();
-                PORTBbits.RB2 = 0;
-
-                switch (g_pi_command) {
-                    case 'F': MOTOR_Forward();  is_moving = 1; break;
-                    case 'B': MOTOR_Backward(); is_moving = 1; break;
-                    case 'L': MOTOR_Left();     is_moving = 1; break;
-                    case 'R': MOTOR_Right();    is_moving = 1; break;
-                    case 'S':
-                    default:  MOTOR_Stop();     is_moving = 0; break;
-                }
+            switch (g_pi_command) {
+                case 'F': MOTOR_Forward();  is_moving = 1; break;
+                case 'B': MOTOR_Backward(); is_moving = 1; break;
+                case 'L': MOTOR_Left();     is_moving = 1; break;
+                case 'R': MOTOR_Right();    is_moving = 1; break;
+                case 'S':
+                default:  MOTOR_Stop();     is_moving = 0; break;
             }
         }
 
-/* 4. Send structured packet to Pi every 200ms (5Hz) */
+        /* 4. Send structured packet to Pi every 200ms (5Hz) */
         static uint32_t last_tx_time = 0;
         if ((g_systemTick_ms - last_tx_time) >= 200) {
             last_tx_time = g_systemTick_ms;
@@ -305,7 +315,7 @@ void main(void) {
             if (fall_flag) {
                 Lcd_String("*FALL DETECTED* ");
             } else if (MPU6050_IsWarning()) {
-                Lcd_String("*TILT WARNING*  ");
+                Lcd_String("*TILT WARNING* ");
             } else {
                 Lcd_String("X:");
                 Lcd_Out_Int(tilt_data.x);
@@ -316,5 +326,5 @@ void main(void) {
         }
 
         __delay_ms(10);
-      }
+    }
 }
