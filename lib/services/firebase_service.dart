@@ -3,23 +3,16 @@ import '../models/vitals_model.dart';
 import '../models/status_model.dart';
 import '../models/alert_model.dart';
 
-// Singleton: this class has only ONE instance throughout the whole app.
-// This avoids creating multiple Firebase connections by accident.
 class FirebaseService {
   static final FirebaseService _instance = FirebaseService._internal();
   factory FirebaseService() => _instance;
   FirebaseService._internal();
 
-  // Root reference to your Firebase database
   final DatabaseReference _db = FirebaseDatabase.instance.ref();
 
-  // ── READ STREAMS ─────────────────────────────────────────────────────────
-  // A Stream is like a live pipe of data.
-  // Every time Firebase data changes, the stream emits a new value.
-  // The UI "listens" to these streams and rebuilds automatically.
+  // ── READ STREAMS ──────────────────────────────────────────────────────────
 
   Stream<VitalsModel> get vitalsStream {
-    // .onValue fires immediately with current data, then again on every change
     return _db.child('vitals').onValue.map((event) {
       final data = event.snapshot.value;
       if (data == null) return VitalsModel.empty();
@@ -43,20 +36,38 @@ class FirebaseService {
     });
   }
 
-  // ── WRITE COMMANDS (App → Firebase → Pi) ─────────────────────────────────
+  // ── GESTURE STREAM ────────────────────────────────────────────────────────
 
-  // Sends a directional command to Firebase.
-  // The Pi is listening and will execute this command via UART to the PIC.
+  Stream<Map<String, dynamic>> get gestureStream {
+    return _db.child('current_gesture').onValue.map((event) {
+      final data = event.snapshot.value;
+      if (data == null) return {};
+      return Map<String, dynamic>.from(data as Map);
+    });
+  }
+
+  String? mapGestureCommand(String? code) {
+    const map = {
+      'F': 'forward',
+      'B': 'backward',
+      'L': 'left',
+      'R': 'right',
+      'S': 'stop',
+      'NONE': null,
+    };
+    return map[code?.toUpperCase()];
+  }
+
+  // ── WRITE COMMANDS ────────────────────────────────────────────────────────
+
   Future<void> sendCommand(String command) async {
     await _db.child('commands').update({
       'override_active': true,
       'emergency_stop': false,
-      'command': command,   // 'forward', 'backward', 'left', 'right', 'stop'
+      'command': command,
     });
   }
 
-  // Highest-priority command. Sets emergency_stop: true.
-  // The Pi firmware should treat this with immediate priority.
   Future<void> emergencyStop() async {
     await _db.child('commands').update({
       'override_active': true,
@@ -65,7 +76,6 @@ class FirebaseService {
     });
   }
 
-  // Releases manual control back to gesture mode
   Future<void> releaseOverride() async {
     await _db.child('commands').update({
       'override_active': false,

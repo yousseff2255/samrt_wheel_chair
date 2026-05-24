@@ -55,7 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       setState(() {
         _vitals = vitals;
-        _isLoading = false;    // Hide loading spinner once first data arrives
+        _isLoading = false; // Hide loading spinner once first data arrives
       });
     });
 
@@ -125,8 +125,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Icon(Icons.warning_rounded, color: color),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(title,
-                  style: TextStyle(color: color, fontSize: 18)),
+              child: Text(title, style: TextStyle(color: color, fontSize: 18)),
             ),
           ],
         ),
@@ -487,6 +486,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       onTap: (index) => setState(() => _selectedTab = index),
       selectedItemColor: const Color(0xFF1565C0),
       unselectedItemColor: Colors.grey,
+      type: BottomNavigationBarType.fixed, // Required for 4+ tabs
       items: [
         const BottomNavigationBarItem(
           icon: Icon(Icons.dashboard_rounded),
