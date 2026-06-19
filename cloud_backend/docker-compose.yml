@@ -1,0 +1,11 @@
+services:
+  car-brain:
+    build: .
+    ports:
+      - "8000:8000"
+    runtime: nvidia              # remove if CPU-only VM
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./sessions:/app/sessions
+    restart: unless-stopped

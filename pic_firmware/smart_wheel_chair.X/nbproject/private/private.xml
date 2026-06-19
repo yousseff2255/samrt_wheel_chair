@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/HAL/BUZZER/BUZZER.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/SERVICES/STD_TYPES.h</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/MCAL/I2C/I2C_interface.h</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/HAL/MPU6050/MPU6050.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/APP/test.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/HAL/MAX30102/MAX30102_program.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/MCAL/TMR0/TMR0.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/MCAL/TMR0/TMR0_interface.h</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/MCAL/INT/INT.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/HAL/LCD/LCD.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/HAL/MOTOR/MOTOR.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/HAL/MPU6050/MPU6050_interface.h</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/MCAL/I2C/I2C.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/HAL/ULTRASONIC/ULTRASONIC.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/MCAL/ADC/ADC.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/MCAL/UART/UART.c</file>
+            <file>file:/E:/University/Spring%2026/CIE%20349/FInal%20Project/Code/samrt_wheel_chair/HAL/ULTRASONIC/ULTRASONIC_private.h</file>
+        </group>
+    </open-files>
+</project-private>
